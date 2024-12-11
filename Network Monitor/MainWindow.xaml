@@ -1,0 +1,26 @@
+﻿<Window x:Class="Network_Monitor.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        WindowStyle="None"
+        Title="NetWork Monitor" Height="200" Width="400">
+    <Border>
+        <Grid>
+            <oxy:PlotView Model="{Binding NetworkPlotModel}" Background="Transparent"/>
+
+            <DockPanel>
+                <TextBlock x:Name="UsageText" FontSize="18" Foreground="RosyBrown" Margin="10,10,0,0">
+                <Run Text="Network"/>
+                <Run x:Name="TextR" Text="{Binding ReceivedUsageText}"/>
+                <Run x:Name="TextS" Text="{Binding SentUsageText}"/>
+                </TextBlock>
+                <TextBlock x:Name="MaxBandText" 
+                       Text="{Binding MaxBandText}" 
+                       FontSize="9" 
+                       Foreground="RosyBrown" 
+                       HorizontalAlignment="Right"
+                       Margin="10"/>
+            </DockPanel>
+        </Grid>
+    </Border>
+</Window>
