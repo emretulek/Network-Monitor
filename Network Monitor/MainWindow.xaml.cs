@@ -33,6 +33,7 @@ namespace Network_Monitor
                 Settings.ReceivedColor = PropertyParser.ToString(config.GetValue("received_color"), Settings.ReceivedColor);
                 Settings.SentColor = PropertyParser.ToString(config.GetValue("sent_color"), Settings.SentColor);
                 Settings.TimeLine = PropertyParser.ToFloat(config.GetValue("graphic_timeline"), Settings.TimeLine);
+                Settings.AdaptorId = PropertyParser.ToInt(config.GetValue("adaptor_id"), Settings.AdaptorId);
 
                 UsageText.FontSize = PropertyParser.ToFloat(config.GetValue("usage_font_size"));
                 UsageText.Foreground = PropertyParser.ToColorBrush(config.GetValue("usage_foreground"));
@@ -48,6 +49,7 @@ namespace Network_Monitor
                 config.Add("received_color", Settings.ReceivedColor);
                 config.Add("sent_color", Settings.SentColor);
                 config.Add("graphic_timeline", Settings.TimeLine);
+                config.Add("adaptor_id", Settings.AdaptorId);
 
                 config.Save();
             }
@@ -62,7 +64,7 @@ namespace Network_Monitor
 
         public WidgetWindow WidgetWindow()
         {
-            return new WidgetWindow(this, WidgetDefaultStruct());
+            return new WidgetWindow(this);
         }
 
         public static WidgetDefaultStruct WidgetDefaultStruct()

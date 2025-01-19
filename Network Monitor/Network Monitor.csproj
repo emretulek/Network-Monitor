@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <Reference Include="Widgets.Common">
-      <HintPath>..\..\Widgets.Common\Widgets.Common\bin\Debug\net8.0-windows\Widgets.Common.dll</HintPath>
+      <HintPath>..\..\Widgets.Common\Widgets.Common\bin\Release\net8.0-windows\Widgets.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
 

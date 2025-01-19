@@ -12,17 +12,15 @@ namespace Network_Monitor
 {
     public partial class NetworkViewModel : INotifyPropertyChanged,IDisposable
     {
-        [GeneratedRegex(@"[^a-zA-Z0-9 _]")]
-        private static partial Regex CleanAdaptorNameRegex();
-
         private readonly Schedule schedule = new();
         private string scheduleID = "";
         private readonly CancellationTokenSource cancellationTokenSource = new();
-        private readonly List<int> BandwdithSteps = [10,50, 100,250,500,1000];
+        private readonly List<int> BandwdithSteps = [10,50,100,250,500,1000];
 
         public struct SettingsStruct
         {
             public float TimeLine { get; set; }
+            public int AdaptorId { get; set; }
             public string ReceivedColor { get; set; }
             public string SentColor { get; set; }
         }
@@ -30,20 +28,13 @@ namespace Network_Monitor
         public static SettingsStruct Default = new()
         {
             TimeLine = 200,
+            AdaptorId = 0,
             ReceivedColor = "#9D0A0A",
             SentColor = "#fc8403",
         };
 
         public required SettingsStruct Settings = Default;
 
-        private readonly List<NetworkInterfaceType> _valid_Interfaces = [
-            NetworkInterfaceType.Ethernet,
-            NetworkInterfaceType.Wireless80211,
-            NetworkInterfaceType.Ppp,
-            NetworkInterfaceType.Wwanpp,
-            NetworkInterfaceType.Wwanpp2,
-            NetworkInterfaceType.Tunnel
-            ];
         private PerformanceCounter? bytesReceivedCounter;
         private PerformanceCounter? bytesSentCounter;
         private AreaSeries? receivedSeries;
@@ -100,41 +91,17 @@ namespace Network_Monitor
             {
                 await Task.Run(() =>
                 {
-                    var networkInterfaces = NetworkInterface.GetAllNetworkInterfaces();
-                    NetworkInterface? interfaceUsed = null;
-
-                    foreach (var netInterface in networkInterfaces)
+                    PerformanceCounterCategory category = new("Network Interface");
+                    String[] instancenames = category.GetInstanceNames();
+            
+                    if (instancenames.Length > 0)
                     {
-                        if (netInterface.OperationalStatus == OperationalStatus.Up)
-                        {
-                            if (_valid_Interfaces.Contains(netInterface.NetworkInterfaceType))
-                            {
-                                interfaceUsed = netInterface;
-                            }
-                        }
+                        bytesReceivedCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", instancenames[Settings.AdaptorId]);
+                        bytesSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", instancenames[Settings.AdaptorId]);
+                        return;
                     }
 
-                    if (interfaceUsed != null)
-                    {
-                        PerformanceCounterCategory category = new("Network Interface");
-                        String[] instancenames = category.GetInstanceNames();
-
-                        string cleanedInterfaceUsedDescription = CleanAdaptorName(interfaceUsed.Description);
-                        var cleanedInstanceNames = instancenames.Select(CleanAdaptorName).ToList();
-
-                        var matchedInstance = cleanedInstanceNames
-                       .Select((name, index) => new { CleanedName = name, OriginalName = instancenames[index] })
-                       .FirstOrDefault(x => x.CleanedName == cleanedInterfaceUsedDescription);
-
-                        if (matchedInstance != null)
-                        {
-                            bytesReceivedCounter = new PerformanceCounter("Network Interface", "Bytes Received/sec", matchedInstance.OriginalName);
-                            bytesSentCounter = new PerformanceCounter("Network Interface", "Bytes Sent/sec", matchedInstance.OriginalName);
-                            return;
-                        }
-                    }
-
-                    throw new Exception("Invladil Ethernet Adaptor.");
+                    throw new Exception("Invalid Ethernet Adaptor.");
                    
                 }, cancellationTokenSource.Token);
             }
@@ -148,6 +115,9 @@ namespace Network_Monitor
             scheduleID = schedule.Secondly(UpdateUsage, 1);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void CreatePlot()
         {
             NetworkPlotModel = new PlotModel
@@ -200,6 +170,9 @@ namespace Network_Monitor
             NetworkPlotModel.Series.Add(sentSeries);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void UpdateUsage()
         {
             if(bytesReceivedCounter is null || bytesSentCounter is null ||
@@ -252,13 +225,6 @@ namespace Network_Monitor
                 }
             });
         }
-
-        // Regex Clean Adaptor Name
-        public static string CleanAdaptorName(string input)
-        {
-            return CleanAdaptorNameRegex().Replace(input, "");
-        }
-
 
         public void Dispose()
         {
